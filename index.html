@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <link rel="stylesheet" href="style.css">
+ 
+    <title>Automated Time Scheduler</title>
+
+ 
+
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h1>KLOZER.io</h1>
+        <ul>
+            <li><a href="#">📊 Reports</a></li>
+            <li><a href="#">👥 Users</a></li>
+            <li><a href="#">📅 Campaigns</a></li>
+            <li><a href="#">📝 Lists</a></li>
+            <li><a href="#">📜 Scripts</a></li>
+            <li><a href="#">🔍 Filters</a></li>
+            <li><a href="#">📞 Inbound</a></li>
+            <li><a href="#">👥 User Groups</a></li>
+            <li><a href="#">💻 Remote Agents</a></li>
+            <li><a href="#">⚙️ Admin</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2>Automated Time Scheduler.</h2>
+        <form id="schedulerForm">
+
+            <label for="customerName">Lead name:</label>
+            <input type="text" id="customerName" name="customerName" required>
+
+ <label for="websiteName">Website Name:</label>
+            <input type="text" id="websiteName" name="websiteName" required>
+
+
+<label for="serviceType">Select Service:</label>
+<select id="serviceType" name="serviceType" required>
+    <option value="">Choose Service</option>
+    <option value="Customer Support">Customer Support</option>
+    <option value="Technical Support">Technical Support</option>
+    <option value="Sales Inquiry">Sales Inquiry</option>
+    <option value="Sales Inquiry">Order Processing</option>
+    <option value="Sales Inquiry">Billing and Payment Support</option>
+    <option value="Sales Inquiry">Help Desk Services</option>
+    <option value="Sales Inquiry"> Market Research & Surveys</option>
+    <option value="Sales Inquiry">Telemarketing & Sales</option>
+    <option value="Sales Inquiry"> Helpdesk & IT Support</option>
+    <option value="Sales Inquiry"> E-commerce Support</option>
+            </select>
+
+            <label for="mobile">Mobile Number:</label>
+            <input type="tel" id="mobile" name="mobile" required pattern="[0-9]{10}" placeholder="Enter 10-digit number">
+
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="status">Status:</label>
+            <select id="status" name="status" required>
+                <option value="">Select Status</option>
+                <option value="Completed">follow-up 1</option>
+                <option value="Cancelled">follow-up 2</option>
+                <option value="Cancelled">follow-up 3</option>
+                <option value="Cancelled">follow-up 4</option>
+            </select>
+
+            <label for="priority">Priority:</label>
+            <select id="priority" name="priority" required>
+                <option value="">Select Service Priority</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+
+            <label for="appointmentDate">Appointment Date:</label>
+            <input type="date" id="appointmentDate" name="appointmentDate" required>
+
+            <label for="appointmentTime">Appointment Time:</label>
+            <input type="time" id="appointmentTime" name="appointmentTime" required>
+
+<label for="search">Search Appointments:</label>
+<input type="text" id="search" placeholder="Search by name, mobile, or service" onkeyup="searchAppointments()">
+
+            <button type="submit">Schedule Appointment</button>
+        </form>
+
+
+<!-----CSV BUTTON JS----->
+<!----<button onclick="exportToCSV()">Export to CSV</button>---->
+
+
+
+<button class="export-btn" onclick="exportToCSV()">Click Here For Excel File</button>
+
+
+
+
+        <!-- Schedule List -->
+        <div class="schedule-list">
+            <h3>Scheduled Appointments</h3>
+            <ul id="scheduleList">
+                <!-- Dynamically added scheduled appointments will appear here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Handling form submission and displaying scheduled appointments
+        document.getElementById('schedulerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const customerName = document.getElementById('customerName').value;
+            const websiteName = document.getElementById('websiteName').value;
+            const serviceType = document.getElementById('serviceType').value;
+            const mobile = document.getElementById('mobile').value;
+            const email = document.getElementById('email').value;
+            const status = document.getElementById('status').value;
+            const priority = document.getElementById('priority').value;
+            const appointmentDate = document.getElementById('appointmentDate').value;
+            const appointmentTime = document.getElementById('appointmentTime').value;
+
+            // Creating a new list item to show the scheduled appointment
+            const scheduleList = document.getElementById('scheduleList');
+            const newListItem = document.createElement('li');
+    newListItem.innerHTML = `
+    <strong>Name:</strong> ${customerName} <br>
+    <strong>Service:</strong> ${serviceType} <br>
+    <strong>Mobile:</strong> ${mobile} <br>
+    <strong>Email:</strong> ${email} <br>
+    <strong>Status:</strong> ${status} <br>
+    <strong>Priority:</strong> ${priority} <br>
+    <strong>Date:</strong> ${appointmentDate} <br>
+    <strong>Time:</strong> ${appointmentTime} <br>
+    <button onclick="editAppointment(this)">Edit</button>
+`;
+
+            scheduleList.appendChild(newListItem);
+
+            // Clear the form
+            document.getElementById('schedulerForm').reset();
+        });
+    </script>
+
+
+
+
+
+
+
+<!-- Include EmailJS SDK -->
+<script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+<script type="text/javascript">
+    (function() {
+        emailjs.init('YOUR_USER_ID'); // Replace with your EmailJS user ID
+    })();
+
+    // Sending confirmation email after scheduling appointment
+    document.getElementById('schedulerForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const customerName = document.getElementById('customerName').value;
+        const email = document.getElementById('email').value;
+        const appointmentDate = document.getElementById('appointmentDate').value;
+        const appointmentTime = document.getElementById('appointmentTime').value;
+
+        // Create email parameters
+        const emailParams = {
+            to_name: customerName,
+            to_email: email,
+            date: appointmentDate,
+            time: appointmentTime,
+        };
+
+        // Send email
+        emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', emailParams)
+            .then(function(response) {
+                alert('Confirmation email sent successfully!');
+            }, function(error) {
+                alert('Failed to send confirmation email.', error);
+            });
+
+        // The rest of your form handling code...
+    });
+
+
+
+function checkForUpcomingAppointments() {
+    const appointments = document.querySelectorAll('#scheduleList li');
+    const currentTime = new Date();
+
+    appointments.forEach(appointment => {
+        const appointmentDateStr = appointment.querySelector("strong:nth-child(7)").textContent.split(': ')[1];
+        const appointmentTimeStr = appointment.querySelector("strong:nth-child(8)").textContent.split(': ')[1];
+        const appointmentDateTime = new Date(`${appointmentDateStr}T${appointmentTimeStr}`);
+
+        const timeDifference = appointmentDateTime - currentTime; // Time difference in milliseconds
+
+        // Check if the appointment is within the next 30 minutes (1800000 ms = 30 minutes)
+        if (timeDifference > 0 && timeDifference <= 1800000) {
+            alert(`Upcoming appointment with ${appointment.querySelector("strong:nth-child(1)").textContent.split(': ')[1]} in the next 30 minutes!`);
+        }
+    });
+}
+
+// Run this function every minute to check for upcoming appointments
+setInterval(checkForUpcomingAppointments, 60000);
+
+
+
+
+function searchAppointments() {
+    const searchValue = document.getElementById('search').value.toLowerCase();
+    const appointments = document.querySelectorAll('#scheduleList li');
+
+    appointments.forEach(appointment => {
+        const text = appointment.textContent.toLowerCase();
+        if (text.includes(searchValue)) {
+            appointment.style.display = '';
+        } else {
+            appointment.style.display = 'none';
+        }
+    });
+}
+
+function editAppointment(element) {
+    const appointmentDetails = element.parentElement;
+
+    // Extract values from the appointment details
+    const name = appointmentDetails.querySelector("strong:nth-child(1)").textContent.split(': ')[1];
+    const service = appointmentDetails.querySelector("strong:nth-child(2)").textContent.split(': ')[1];
+    const mobile = appointmentDetails.querySelector("strong:nth-child(3)").textContent.split(': ')[1];
+    const email = appointmentDetails.querySelector("strong:nth-child(4)").textContent.split(': ')[1];
+    const status = appointmentDetails.querySelector("strong:nth-child(5)").textContent.split(': ')[1];
+    const priority = appointmentDetails.querySelector("strong:nth-child(6)").textContent.split(': ')[1];
+    const date = appointmentDetails.querySelector("strong:nth-child(7)").textContent.split(': ')[1];
+    const time = appointmentDetails.querySelector("strong:nth-child(8)").textContent.split(': ')[1];
+
+    // Fill the form with extracted values
+    document.getElementById('customerName').value = name;
+    document.getElementById('serviceType').value = service;
+    document.getElementById('mobile').value = mobile;
+    document.getElementById('email').value = email;
+    document.getElementById('status').value = status;
+    document.getElementById('priority').value = priority;
+    document.getElementById('appointmentDate').value = date;
+    document.getElementById('appointmentTime').value = time;
+
+    // Remove the appointment from the list
+    appointmentDetails.remove();
+}
+
+
+<!-----CSV BUTTON JS----->
+function exportToCSV() {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    const appointments = document.querySelectorAll('#scheduleList li');
+
+    appointments.forEach(appointment => {
+        const details = appointment.textContent.trim().replace(/\n/g, ",");
+        csvContent += details + "\r\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "appointments.csv");
+    document.body.appendChild(link);
+
+    link.click();
+}
+
+
+</script>
+
+
+
+
+
+
+
+</body>
+</html>
